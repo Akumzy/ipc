@@ -8,7 +8,6 @@ class IPC extends EventEmitter {
     this.arg = arg || []
     this.go = null
     this.closed = false
-    this._onData = this._onData.bind(this)
   }
   init() {
     this.closed = false
@@ -17,9 +16,9 @@ class IPC extends EventEmitter {
     this.go = go
     go.stderr.setEncoding('utf8')
     go.stdout.setEncoding('utf8')
-    ;['close', 'error', 'end', 'data'].forEach(event => go.stderr.on(event, e => self.emit(event, e)))
+    ;['close', 'error', 'end', 'data'].forEach(event => go.stderr.on(event, e => self.emit('log', e)))
     let outBuffer = ''
-    pro.stdout.on('data', s => {
+    go.stdout.on('data', s => {
       if (isJSON(s)) {
         let payload = parseJSON(s)
         if (typeof payload === 'object' && payload !== null) {
