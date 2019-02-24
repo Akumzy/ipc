@@ -107,7 +107,6 @@ func (ipc IPC) Start() {
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
-		log.Println(text)
 		if text != "" {
 			var payload payloadReceive
 			text = strings.Replace(text, "\n", "", -1)
