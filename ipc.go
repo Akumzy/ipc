@@ -29,6 +29,7 @@ type payload struct {
 	Data  interface{} `json:"data"`
 	Error interface{} `json:"error"`
 	SR    bool        `json:"SR"` //send and receive
+	RS    bool        `json:"RC"` // receive and send
 }
 
 /*Handler When the underline type of data is being
@@ -83,6 +84,14 @@ func (ipc IPC) OnReceiveAndReply(event string, handler HandlerWithReply) {
 	h = append(h, handler)
 	ipc.receiveSendListerners[event] = h
 
+}
+
+/*SendAndReceive send and listen for reply event
+ */
+func (ipc IPC) SendAndReceive(event string, data interface{}, handler Handler) {
+	ipc.sendChannel <- payload{Event: event, Data: data, RS: true}
+	channel := event + "___RS___"
+	ipc.On(channel, handler)
 }
 
 /*Start `ipc`
