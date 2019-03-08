@@ -126,6 +126,9 @@ func (ipc IPC) Start() {
 					log.Println(err)
 					continue
 				}
+				if payload.Event == "___EXIT___" {
+					os.Exit(1)
+				}
 				if payload.SR {
 					for _, handler := range ipc.receiveSendListerners[payload.Event] {
 						replyChannel := payload.Event + "___RC___"
