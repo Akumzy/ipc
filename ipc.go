@@ -94,6 +94,14 @@ func (ipc IPC) SendAndReceive(event string, data interface{}, handler Handler) {
 	ipc.On(channel, handler)
 }
 
+/*RemoveListener remove listener
+ */
+func (ipc IPC) RemoveListener(event string) {
+	if _, ok := ipc.receiveListerners[event]; ok {
+		delete(ipc.receiveListerners, event)
+	}
+}
+
 /*Start `ipc`
 * the `ipc.Start` method will blocks executions
 * so is either you put in a seperate `Go routine` or put you own code in
