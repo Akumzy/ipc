@@ -36,7 +36,7 @@ type Who struct {
 }
 
 func main() {
-	ipcIO := ipc.New()
+	ipcIO = ipc.New()
 	go func() {
 		// Me trying to write spanish
 		ipcIO.SendAndReceive("hola", "Hola amigo, coma este nombre?", func(payload interface{}) {
