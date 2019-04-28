@@ -1,3 +1,5 @@
+// Package ipc provides an event listeners and event emitter methods or functions for
+// ipc(Inter-process communication) using the process  `stdin` and `stdout` as it's meduim.
 package ipc
 
 import (
@@ -9,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 // IPC channel
@@ -25,27 +28,35 @@ var (
 
 // Payload this is the payload structure
 type payload struct {
-	Event string      `json:"event"`
+	Event string `json:"event"`
+	// If the data received from the parent is a literal value `Data`
+	//type will be equals to the underlining type for example:
+	// JavaScripts === Go
+	// `null  === nil`
+	// `undefined === nil`
+	// `number(int) === int`
+	// `string === string`
+	// else if the `Data` is an Object in JavaScript
+	// data will be a JSON string
 	Data  interface{} `json:"data"`
 	Error interface{} `json:"error"`
 	SR    bool        `json:"SR"` //send and receive
 	RS    bool        `json:"RC"` // receive and send
 }
 
-/*Handler When the underline type of data is being
-  access through `type assertion` if the data has a
-  literal value the underlining type will be return
-  else a `JSON` representive of the data will be return
-*/
+//Handler When the underline type of data is being
+//   access through `type assertion` if the data has a
+//   literal value the underlining type will be return
+//   else a `JSON` representive of the data will be return
 type Handler func(data interface{})
 
-/*HandlerWithReply  When the underline type of data is being
-  access through `type assertion` if the data has a literal
-  value the underlining type will be return else a `JSON` representive of
-  the data will be return.
-  `replyChannel` is the event name you'll pass to `ipc.Reply` method to respond
-   to the sender
-*/
+//HandlerWithReply  When the underline type of data is being
+//   access through `type assertion` if the data has a literal
+//   value the underlining type will be return else a `JSON` representive of
+//   the data will be return.
+//   `replyChannel` is the event name you'll pass to `ipc.Reply` method to respond
+//    to the sender
+
 type HandlerWithReply func(replyChannel string, data interface{})
 
 // PayloadReceive this is the payload structure
@@ -74,9 +85,8 @@ func (ipc IPC) On(event string, handler Handler) {
 	ipc.receiveListerners[event] = h
 }
 
-/*OnReceiveAndReply listen for an events and as well reply back to
- * the same sender with the help of `ipc.Reply` method
- */
+//OnReceiveAndReply listen for an events and as well reply back to
+// the same sender with the help of `ipc.Reply` method
 func (ipc IPC) OnReceiveAndReply(event string, handler HandlerWithReply) {
 	rRLock.Lock()
 	defer rRLock.Unlock()
@@ -86,27 +96,25 @@ func (ipc IPC) OnReceiveAndReply(event string, handler HandlerWithReply) {
 
 }
 
-/*SendAndReceive send and listen for reply event
- */
+//SendAndReceive send and listen for reply event
 func (ipc IPC) SendAndReceive(event string, data interface{}, handler Handler) {
 	ipc.sendChannel <- payload{Event: event, Data: data, RS: true}
 	channel := event + "___RS___"
 	ipc.On(channel, handler)
 }
 
-/*RemoveListener remove listener
- */
+//RemoveListener remove listener
 func (ipc IPC) RemoveListener(event string) {
 	if _, ok := ipc.receiveListerners[event]; ok {
 		delete(ipc.receiveListerners, event)
 	}
 }
 
-/*Start `ipc`
-* the `ipc.Start` method will blocks executions
-* so is either you put in a seperate `Go routine` or put you own code in
-* a different `Go routine`
- */
+//Start `ipc`
+// the `ipc.Start` method will blocks executions
+// so is either you put in a seperate `Go routine` or put you own code in
+// a different `Go routine`
+//
 func (ipc IPC) Start() {
 
 	go func() {
@@ -126,7 +134,7 @@ func (ipc IPC) Start() {
 		text, _ := reader.ReadString('\n')
 		if text != "" {
 			var payload payloadReceive
-			text = strings.Replace(text, "\n", "", -1)
+			text = strings.TrimSuffix(text, "\n")
 			// check if the text is not empty string
 
 			if text != "" {
@@ -135,7 +143,7 @@ func (ipc IPC) Start() {
 					continue
 				}
 				if payload.Event == "___EXIT___" {
-					os.Exit(1)
+					os.Exit(0)
 				}
 				if payload.SR {
 					for _, handler := range ipc.receiveSendListerners[payload.Event] {
@@ -144,7 +152,6 @@ func (ipc IPC) Start() {
 					}
 				} else {
 					for _, handler := range ipc.receiveListerners[payload.Event] {
-
 						handler(payload.Data)
 					}
 				}
@@ -165,11 +172,30 @@ func Marshal(v interface{}) (string, error) {
 	return strings.TrimSpace(buf.String()), nil
 }
 
+//pingPong is used to eliminate zombies
+//ping the parent process every 20 second
+func pingPong(ipc *IPC) {
+	isActive := true
+	ipc.On("pong", func(d interface{}) {
+		isActive = true
+	})
+	for {
+		time.Sleep(20 * time.Second)
+		if !isActive {
+			os.Exit(0)
+		} else {
+			isActive = false
+		}
+		ipc.Send("ping", nil)
+	}
+}
+
 // New return now ipc
 func New() *IPC {
 	ipc := &IPC{}
 	ipc.sendChannel = make(chan payload)
 	ipc.receiveListerners = make(map[string][]Handler)
 	ipc.receiveSendListerners = make(map[string][]HandlerWithReply)
+	go pingPong(ipc)
 	return ipc
 }

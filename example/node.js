@@ -1,21 +1,23 @@
-const IPC = require('ipc-node-go').default
-const ipc = new IPC('./example').init()
-ipc.on('log', console.log)
-let count = 0
+const IPC = require('ipc-node-go')
+const ipc = new IPC('./example')
+ipc.init()
 
-// setInterval(() => {
-//   count++
-//   ipc.send('count', count)
-//   ipc.send('count-object', { num: count })
-// }, 2000)
-ipc.on('hello', d => {
-  console.log(d)
+ipc.on('log', console.log)
+// Log all error from stderr
+ipc.on('error', console.error)
+ipc.on('ping', ()=> {
+  console.log(new Date())
 })
-ipc.sendAndReceive('yoo', '/home/akumzy/Documents/Petrobase_Drive', (err, d) => {
-  console.log(err)
-  console.log(d)
+
+//
+ipc.send('who', {name:'Akuma Nodejs'})
+// send and receive and an acknowledgement
+ipc.sendAndReceive('yoo', 'Hello, how are you doing?', (err, d) => {
+  err ? console.error(err) : console.log(d)
 })
-process.on('exit', () => {
-  ipc.kill()
+// listen for event and reply to the channel
+ipc.onReceiveAnSend('hola', (channel,data)=>{
+  console.log(data)
+  ipc.send(channel, 'cool thanks')
 })
-// { "event": "app:addRecursive", "data": "/home/akumzy/Documents/Petrobase_Drive", "SR": true }
+

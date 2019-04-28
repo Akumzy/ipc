@@ -9,31 +9,26 @@ import (
 
 var ipcIO *ipc.IPC
 
-// Count numbers
-type Count struct {
-	Num int `json:"num"`
+type Who struct {
+	Name string `json:"name,omitempty"`
 }
 
 func main() {
 	ipcIO := ipc.New()
 	go func() {
-		name := map[string]string{}
-		name["name"] = "Golang"
-		ipcIO.Send("hello", name)
-
-		ipcIO.On("count", func(data interface{}) {
-			count := data.(float64)
-			log.Println(count)
+		// Me trying to write spanish
+		ipcIO.SendAndReceive("hola", "Hola amigo, coma este nombre?", func(payload interface{}) {
+			log.Println(payload)
 		})
 
-		ipcIO.On("count-object", func(data interface{}) {
-			var count Count
+		ipcIO.On("who", func(data interface{}) {
+			var who Who
 			text := data.(string)
-			if err := json.Unmarshal([]byte(text), &count); err != nil {
+			if err := json.Unmarshal([]byte(text), &who); err != nil {
 				log.Println(err)
 				return
 			}
-			log.Println(count)
+			log.Println(who.Name)
 		})
 
 		ipcIO.OnReceiveAndReply("yoo", func(reply string, d interface{}) {
