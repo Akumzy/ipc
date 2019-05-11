@@ -1,4 +1,5 @@
 # IPC
+[![GoDoc](https://godoc.org/github.com/Akumzy/ipc?status.svg)](https://godoc.org/github.com/Akumzy/ipc)
 
 `ipc` provides an event listeners and event emitter methods or functions for ipc(Inter-process communication) using the process `stdin` as it's meduim.
 
