@@ -50,13 +50,12 @@ type payload struct {
 //   else a `JSON` representive of the data will be return
 type Handler func(data interface{})
 
-//HandlerWithReply  When the underline type of data is being
+// HandlerWithReply  When the underline type of data is being
 //   access through `type assertion` if the data has a literal
 //   value the underlining type will be return else a `JSON` representive of
 //   the data will be return.
 //   `replyChannel` is the event name you'll pass to `ipc.Reply` method to respond
 //    to the sender
-
 type HandlerWithReply func(replyChannel string, data interface{})
 
 // PayloadReceive this is the payload structure
