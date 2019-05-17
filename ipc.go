@@ -186,6 +186,7 @@ func pingPong(ipc *IPC) {
 		} else {
 			isActive = false
 		}
+		ipc.Send("ping", nil)
 	}
 }
 
