@@ -175,6 +175,9 @@ func Marshal(v interface{}) (string, error) {
 //ping the parent process every 20 second
 func pingPong(ipc *IPC) {
 	isActive := true
+	ipc.On("pong", func(d interface{}) {
+		isActive = true
+	})
 	for {
 		time.Sleep(20 * time.Second)
 		if !isActive {
@@ -183,9 +186,6 @@ func pingPong(ipc *IPC) {
 		} else {
 			isActive = false
 		}
-		ipc.SendAndReceive("ping", nil, func(d interface{}) {
-			isActive = true
-		})
 	}
 }
 
