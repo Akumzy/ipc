@@ -180,11 +180,11 @@ func pingPong(ipc *IPC) {
 	})
 	for {
 		time.Sleep(20 * time.Second)
-		if !isActive {
+		if isActive {
+			isActive = false
+		} else {
 			log.Println("[IPC] Timeout closing process.")
 			os.Exit(0)
-		} else {
-			isActive = false
 		}
 		ipc.Send("ping", nil)
 	}
