@@ -1,5 +1,5 @@
 // Package ipc provides an event listeners and event emitter methods or functions for
-// ipc(Inter-process communication) using the process  `stdin` and `stdout` as it's meduim.
+// ipc(Inter-process communication) using the process  `stdin` and `stdout` as it's medium.
 package ipc
 
 import (
