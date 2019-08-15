@@ -71,7 +71,7 @@ func main() {
 ```js
 // In Nodejs app
 const IPC = require('ipc-node-go')
-const ipc = new IPC('./test')
+const ipc = new IPC('path-to-your-go-binary')
 ipc.init()
 
 ipc.on('log', console.log)
