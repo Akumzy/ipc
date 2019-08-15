@@ -1,4 +1,5 @@
 # IPC
+
 [![GoDoc](https://godoc.org/github.com/Akumzy/ipc?status.svg)](https://godoc.org/github.com/Akumzy/ipc)
 
 `ipc` provides an event listeners and event emitter methods or functions for ipc(Inter-process communication) using the process `stdin` as it's meduim.
@@ -21,6 +22,7 @@ go get github.com/Akumzy/ipc
 ```
 
 ```go
+// main.go binary
 package main
 
 import (
@@ -64,4 +66,30 @@ func main() {
 	// or start your own code in a go routine
 	ipcIO.Start()
 }
+```
+
+```js
+// In Nodejs app
+const IPC = require('ipc-node-go')
+const ipc = new IPC('./test')
+ipc.init()
+
+ipc.on('log', console.log)
+// Log all error from stderr
+ipc.on('error', console.error)
+
+//
+ipc.send('who', { name: 'Akuma Nodejs' })
+// send and receive and an acknowledgement
+
+// listen for event and reply to the channel
+ipc.onReceiveAnSend('hola', (channel, data) => {
+  console.log(data)
+  ipc.send(channel, 'cool thanks')
+})
+setInterval(() => {
+  ipc.sendAndReceive('yoo', 'Hello, how are you doing?', (err, data) => {
+    err ? console.error(err) : console.log(data)
+  })
+}, 20000)
 ```
