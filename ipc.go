@@ -130,7 +130,11 @@ func (ipc IPC) Start() {
 	}()
 	for {
 		reader := bufio.NewReader(os.Stdin)
-		text, _ := reader.ReadString('\n')
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 		if text != "" {
 			var payload payloadReceive
 			text = strings.TrimSuffix(text, "\n")
@@ -144,16 +148,21 @@ func (ipc IPC) Start() {
 				if payload.Event == "___EXIT___" {
 					os.Exit(0)
 				}
-				if payload.SR {
-					for _, handler := range ipc.receiveSendListerners[payload.Event] {
-						replyChannel := payload.Event + "___RC___"
-						handler(replyChannel, payload.Data)
+				// Run the handlers in a goroutine to prevent
+				// https://github.com/Akumzy/ipc/issues/1
+				go func() {
+
+					if payload.SR {
+						for _, handler := range ipc.receiveSendListerners[payload.Event] {
+							replyChannel := payload.Event + "___RC___"
+							handler(replyChannel, payload.Data)
+						}
+					} else {
+						for _, handler := range ipc.receiveListerners[payload.Event] {
+							handler(payload.Data)
+						}
 					}
-				} else {
-					for _, handler := range ipc.receiveListerners[payload.Event] {
-						handler(payload.Data)
-					}
-				}
+				}()
 			}
 
 		}
