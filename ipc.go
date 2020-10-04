@@ -181,7 +181,7 @@ func Marshal(v interface{}) (string, error) {
 }
 
 //pingPong is used to eliminate zombies
-//ping the parent process every 20 second
+//ping the parent process every 20 seconds
 func pingPong(ipc *IPC) {
 	isActive := true
 	ipc.On("pong", func(d interface{}) {
