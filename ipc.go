@@ -128,8 +128,8 @@ func (ipc IPC) Start() {
 
 		}
 	}()
+	reader := bufio.NewReader(os.Stdin)
 	for {
-		reader := bufio.NewReader(os.Stdin)
 		text, err := reader.ReadString('\n')
 		if err != nil {
 			log.Println(err)
